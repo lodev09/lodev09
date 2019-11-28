@@ -14,6 +14,7 @@
 		"monolog/monolog": "^1.23",
 		"php-curl-class/php-curl-class": "^8.3",
 		"fightbulc/moment": "^1.26",
+		"vlucas/phpdotenv": "^3.3",
 		"lodev09/bootstrap-php": "^0.1",
 		"lodev09/php-util": "^1.1",
 		"lodev09/php-models": "^1.1",
