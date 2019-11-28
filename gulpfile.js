@@ -26,26 +26,26 @@ gulp.task('vendor', function() {
       '!./node_modules/bootstrap/dist/css/bootstrap-grid*',
       '!./node_modules/bootstrap/dist/css/bootstrap-reboot*'
     ])
-    .pipe(gulp.dest('./src/vendor/bootstrap'))
+    .pipe(gulp.dest('./public/assets/vendor/bootstrap'))
 
   // Font Awesome
   gulp.src([
       './node_modules/@fortawesome/**/*',
     ])
-    .pipe(gulp.dest('./src/vendor'))
+    .pipe(gulp.dest('./public/assets/vendor'))
 
   // jQuery
   gulp.src([
       './node_modules/jquery/dist/*',
       '!./node_modules/jquery/dist/core.js'
     ])
-    .pipe(gulp.dest('./src/vendor/jquery'))
+    .pipe(gulp.dest('./public/assets/vendor/jquery'))
 
   // jQuery Easing
   gulp.src([
       './node_modules/jquery.easing/*.js'
     ])
-    .pipe(gulp.dest('./src/vendor/jquery-easing'))
+    .pipe(gulp.dest('./public/assets/vendor/jquery-easing'))
 
 });
 
