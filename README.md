@@ -15,5 +15,10 @@ npm install
 gulp
 ```
 
+### Database
+```
+mysql -uUSERNAME -p resume_db < src/db.sql
+```
+
 ## Credits
 Theme: https://github.com/BlackrockDigital/startbootstrap-resume
