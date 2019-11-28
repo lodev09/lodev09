@@ -9,4 +9,11 @@ My personal site
 - MySQL 8.0
 
 ## Installation
-https://github.com/BlackrockDigital/startbootstrap-resume
+```bash
+composer install
+npm install
+gulp
+```
+
+## Credits
+Theme: https://github.com/BlackrockDigital/startbootstrap-resume
