@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.17, for osx10.14 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.19, for osx10.15 (x86_64)
 --
 -- Host: localhost    Database: lodev09
 -- ------------------------------------------------------
--- Server version	8.0.17
+-- Server version	8.0.19
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `links`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `links` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `active` tinyint(4) NOT NULL DEFAULT '1',
-  `profile_id` int(11) NOT NULL DEFAULT '0',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `active` tinyint NOT NULL DEFAULT '1',
+  `profile_id` int NOT NULL DEFAULT '0',
   `name` varchar(128) DEFAULT NULL,
   `url` varchar(128) DEFAULT NULL,
   `icon` varchar(128) DEFAULT NULL,
@@ -59,8 +59,8 @@ DROP TABLE IF EXISTS `profile`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `profile` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `active` tinyint(4) NOT NULL DEFAULT '1',
+  `id` int NOT NULL AUTO_INCREMENT,
+  `active` tinyint NOT NULL DEFAULT '1',
   `firstname` varchar(128) DEFAULT NULL,
   `lastname` varchar(128) DEFAULT NULL,
   `address` varchar(128) DEFAULT NULL,
@@ -83,9 +83,13 @@ CREATE TABLE `profile` (
 
 LOCK TABLES `profile` WRITE;
 /*!40000 ALTER TABLE `profile` DISABLE KEYS */;
-INSERT INTO `profile` VALUES (1,1,'Joemary','Lo','Dumaguete City, Philippines','111111','lodev09@gmail.com','Highly-skilled full stack developer bringing more than 6 years in software design, development and integration. Advanced knowledge of PHP, MySQL, Javascript, and React/Redux. Passionate about quality, Fast learner and loves challenges.','2019-11-28 23:09:10','2018-12-31 02:16:01');
+INSERT INTO `profile` VALUES (1,1,'Jovanni','Lo','Dumaguete City, Philippines','+63917***5935','lodev09@gmail.com','Highly-skilled full stack developer bringing more than 6 years in software design, development and integration. Advanced knowledge of PHP, MySQL, Javascript, and React/Redux. Passionate about quality, Fast learner and loves challenges.','2020-07-19 03:52:06','2018-12-31 02:16:01');
 /*!40000 ALTER TABLE `profile` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'lodev09'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -96,4 +100,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-11-29  0:15:40
+-- Dump completed on 2020-07-19  3:53:23
