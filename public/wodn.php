@@ -14,7 +14,7 @@ require_once 'init.php';
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Resume - Start Bootstrap Theme</title>
+    <title>Production Rank Calculator</title>
 
     <!-- Bootstrap core CSS -->
     <link href="<?= ASSETS_URL ?>/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -49,10 +49,10 @@ require_once 'init.php';
           $gears = ['theano', 'coma', 'cornu', 'felis'];
 
           $stones = [
-            'theano' => 196,
-            'coma' => 300,
-            'cornu' => 479,
-            'felis' => 563
+            'theano' => 232,
+            'coma' => 355,
+            'cornu' => 529,
+            'felis' => 300
           ];
 
           $crafts = [
