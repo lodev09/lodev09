@@ -119,10 +119,10 @@ require_once 'init.php';
               $gold = $craft['gold'] * $can_craft;
               $points = $can_craft * $craft['points'];
 
-              echo '<div class="col-sm-6 col-md-3">';
+              echo '<div class="col-md-6 col-lg-3">';
               echo '<div class="form-group">
-                  <label class=""><h3>'.$gear.'</h3></label>
-                  <input type="number" name="'.$gear.'" class="form-control" placeholder="Soul Stones" value="'.$available_stones.'">
+                  <label class="" for="input-'.$gear.'"><h3>'.$gear.'</h3></label>
+                  <input type="number" id="input-'.$gear.'" name="'.$gear.'" class="form-control" placeholder="Soul Stones" value="'.$available_stones.'">
                 </div>';
 
               echo '<p>';
@@ -166,10 +166,10 @@ require_once 'init.php';
           <h2><?= number_format($total_points) ?></h2>
 
           <small>Total FTG</small>
-          <h2><?= number_format($total_ftg) ?></h2>
+          <h3><?= number_format($total_ftg) ?></h3>
 
           <small>Total GOLD</small>
-          <h2><?= number_format($total_gold) ?></h2>
+          <h3><?= number_format($total_gold) ?></h3>
 
           <hr>
           <button type="submit" class="btn btn-success">Update</button>
