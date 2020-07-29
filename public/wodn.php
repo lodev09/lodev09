@@ -64,7 +64,8 @@ require_once 'init.php';
                 ],
                 'stones' => 13,
                 'points' => 70830,
-                'ftg' => 350
+                'ftg' => 350,
+                'gold' => 88000
               ],
               'coma' => [
                 'rss' => [
@@ -73,7 +74,8 @@ require_once 'init.php';
                 ],
                 'stones' => 13,
                 'points' => 54460,
-                'ftg' => 310
+                'ftg' => 310,
+                'gold' => 85000
               ],
               'cornu' => [
                 'rss' => [
@@ -82,7 +84,8 @@ require_once 'init.php';
                 ],
                 'stones' => 10,
                 'points' => 40320,
-                'ftg' => 270
+                'ftg' => 270,
+                'gold' => 72000
               ],
               'felis' => [
                 'rss' => [
@@ -91,12 +94,14 @@ require_once 'init.php';
                 ],
                 'stones' => 4,
                 'points' => 28390,
-                'ftg' => 230
+                'ftg' => 230,
+                'gold' => 59000
               ]
             ];
 
             $total_points = 0;
             $total_ftg = 0;
+            $total_gold = 0;
             $requirements = [];
 
             foreach ($gears as $gear) {
@@ -110,6 +115,7 @@ require_once 'init.php';
               // requirements
               $can_craft = $available_stones / $craft['stones'];
               $ftg = $craft['ftg'] * $can_craft;
+              $gold = $craft['gold'] * $can_craft;
               $points = $can_craft * $craft['points'];
 
               echo '<div class="col-sm-6 col-md-3">';
@@ -119,8 +125,9 @@ require_once 'init.php';
                 </div>';
 
               echo '<p>';
-              echo 'NEED FTG: '.number_format($ftg).'<br>';
-              echo 'POINTS: '.number_format($points).'<br>';
+              echo '<div><small>FTG </small> <strong class="float-right">'.number_format($ftg).'</strong></div>';
+              echo '<div><small>GOLD </small> <strong class="float-right">'.number_format($gold).'</strong></div>';
+              echo '<div><small>POINTS </small> <strong class="float-right">'.number_format($points).'</strong></div>';
               echo '</p>';
               echo '</div>';
 
@@ -135,6 +142,7 @@ require_once 'init.php';
 
               $total_points += $points;
               $total_ftg += $ftg;
+              $total_gold += $gold;
             }
 
 
@@ -158,6 +166,9 @@ require_once 'init.php';
 
           <small>Total FTG</small>
           <h2><?= number_format($total_ftg) ?></h2>
+
+          <small>Total GOLD</small>
+          <h2><?= number_format($total_gold) ?></h2>
 
           <hr>
           <button type="submit" class="btn btn-success">Update</button>
