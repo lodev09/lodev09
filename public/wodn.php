@@ -112,7 +112,7 @@ require_once 'init.php';
               $ftg = $craft['ftg'] * $can_craft;
               $points = $can_craft * $craft['points'];
 
-              echo '<div class="col">';
+              echo '<div class="col-sm-6 col-md-3">';
               echo '<div class="form-group">
                   <label class=""><h3>'.$gear.'</h3></label>
                   <input type="number" name="'.$gear.'" class="form-control" placeholder="Soul Stones" value="'.$available_stones.'">
