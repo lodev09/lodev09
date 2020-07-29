@@ -43,117 +43,125 @@ require_once 'init.php';
 
     <div class="container-fluid p-0">
       <section class="resume-section p-3 p-lg-5">
-        <div class="row">
-          <?php
+        <form method="GET">
+          <div class="row">
+            <?php
 
-          $gears = ['theano', 'coma', 'cornu', 'felis'];
+            $gears = ['theano', 'coma', 'cornu', 'felis'];
 
-          $stones = [
-            'theano' => 232,
-            'coma' => 355,
-            'cornu' => 529,
-            'felis' => 300
-          ];
+            $stones = [
+              'theano' => get('theano', $_GET, 0),
+              'coma' => get('coma', $_GET, 0),
+              'cornu' => get('cornu', $_GET, 0),
+              'felis' => get('felis', $_GET, 0)
+            ];
 
-          $crafts = [
-            'theano' => [
-              'rss' => [
-                'palladium' => 33,
-                'pasus' => 27
+            $crafts = [
+              'theano' => [
+                'rss' => [
+                  'palladium' => 33,
+                  'pasus' => 27
+                ],
+                'stones' => 13,
+                'points' => 70830,
+                'ftg' => 350
               ],
-              'stones' => 13,
-              'points' => 70830,
-              'ftg' => 350
-            ],
-            'coma' => [
-              'rss' => [
-                'garnierite' => 32,
-                'potencia' => 34
+              'coma' => [
+                'rss' => [
+                  'garnierite' => 32,
+                  'potencia' => 34
+                ],
+                'stones' => 13,
+                'points' => 54460,
+                'ftg' => 310
               ],
-              'stones' => 13,
-              'points' => 54460,
-              'ftg' => 310
-            ],
-            'cornu' => [
-              'rss' => [
-                'garnierite' => 28,
-                'potencia' => 30
+              'cornu' => [
+                'rss' => [
+                  'garnierite' => 28,
+                  'potencia' => 30
+                ],
+                'stones' => 10,
+                'points' => 40320,
+                'ftg' => 270
               ],
-              'stones' => 10,
-              'points' => 40320,
-              'ftg' => 270
-            ],
-            'felis' => [
-              'rss' => [
-                'gemstone' => 24,
-                'darkness' => 15
-              ],
-              'stones' => 4,
-              'points' => 28390,
-              'ftg' => 230
-            ]
-          ];
+              'felis' => [
+                'rss' => [
+                  'gemstone' => 24,
+                  'darkness' => 15
+                ],
+                'stones' => 4,
+                'points' => 28390,
+                'ftg' => 230
+              ]
+            ];
 
-          $total_points = 0;
-          $total_ftg = 0;
-          $requirements = [];
+            $total_points = 0;
+            $total_ftg = 0;
+            $requirements = [];
 
-          foreach ($gears as $gear) {
+            foreach ($gears as $gear) {
 
-            $ftg = 0;
-            $points = 0;
+              $ftg = 0;
+              $points = 0;
 
-            $available_stones = $stones[$gear];
-            $craft = $crafts[$gear];
+              $available_stones = $stones[$gear];
+              $craft = $crafts[$gear];
 
-            // requirements
-            $can_craft = $available_stones / $craft['stones'];
-            $ftg = $craft['ftg'] * $can_craft;
-            $points = $can_craft * $craft['points'];
+              // requirements
+              $can_craft = $available_stones / $craft['stones'];
+              $ftg = $craft['ftg'] * $can_craft;
+              $points = $can_craft * $craft['points'];
 
-            echo '<div class="col">';
-            echo '<h3 class="m-0">'.$gear.'</h3><p><small>'.$available_stones.' stones</small></p>';
+              echo '<div class="col">';
+              echo '<div class="form-group">
+                  <label class=""><h3>'.$gear.'</h3></label>
+                  <input type="number" name="'.$gear.'" class="form-control" placeholder="Soul Stones" value="'.$available_stones.'">
+                </div>';
 
-            echo '<p>';
-            echo 'NEED FTG: '.number_format($ftg).'<br>';
-            echo 'POINTS: '.number_format($points).'<br>';
-            echo '</p>';
-            echo '</div>';
+              echo '<p>';
+              echo 'NEED FTG: '.number_format($ftg).'<br>';
+              echo 'POINTS: '.number_format($points).'<br>';
+              echo '</p>';
+              echo '</div>';
 
-            $rss = $craft['rss'];
-            foreach ($rss as $name => $amount) {
-              if (!isset($requirements[$name])) {
-                $requirements[$name] = 0;
+              $rss = $craft['rss'];
+              foreach ($rss as $name => $amount) {
+                if (!isset($requirements[$name])) {
+                  $requirements[$name] = 0;
+                }
+
+                $requirements[$name] += $amount * $can_craft;
               }
 
-              $requirements[$name] += $amount * $can_craft;
+              $total_points += $points;
+              $total_ftg += $ftg;
             }
 
-            $total_points += $points;
-            $total_ftg += $ftg;
-          }
 
+            ?>
+          </div>
 
-          ?>
-        </div>
+          <hr>
+          <h4>Requirements</h4>
+          <div class="row">
+            <?php foreach($requirements as $name => $amount): ?>
+              <div class="col">
+                <small><?= $name ?></small>
+                <h4><?= number_format($amount) ?></h4>
+              </div>
+            <?php endforeach; ?>
+          </div>
 
-        <hr>
-        <h4>Requirements</h4>
-        <div class="row">
-          <?php foreach($requirements as $name => $amount): ?>
-            <div class="col">
-              <small><?= $name ?></small>
-              <h4><?= number_format($amount) ?></h4>
-            </div>
-          <?php endforeach; ?>
-        </div>
+          <hr>
+          <small>Total honor</small>
+          <h2><?= number_format($total_points) ?></h2>
 
-        <hr>
-        <small>Total honor</small>
-        <h2><?= number_format($total_points) ?></h2>
+          <small>Total FTG</small>
+          <h2><?= number_format($total_ftg) ?></h2>
 
-        <small>Total FTG</small>
-        <h2><?= number_format($total_ftg) ?></h2>
+          <hr>
+          <button type="submit" class="btn btn-success">Update</button>
+        </form>
       </section>
     </div>
 
