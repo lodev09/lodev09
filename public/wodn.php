@@ -108,6 +108,7 @@ require_once 'init.php';
 
               $ftg = 0;
               $points = 0;
+              $gold = 0;
 
               $available_stones = $stones[$gear];
               $craft = $crafts[$gear];
