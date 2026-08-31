@@ -100,6 +100,8 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const [zoom, setZoom] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [panning, setPanning] = useState(false)
+  const panState = useRef({ down: false, dragging: false, startX: 0, scrollStart: 0 })
   const [entered, setEntered] = useState(!!reduced)
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [measured, setMeasured] = useState<Record<string, number>>({})
@@ -182,6 +184,47 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       prev[selectedId] === contentHeight ? prev : { ...prev, [selectedId]: contentHeight }
     )
   }, [selectedId])
+
+  // Drag to pan with the mouse when zoomed in; touch keeps native scrolling
+  const onPanDown = (event: React.PointerEvent) => {
+    const node = scrollRef.current
+    if (event.pointerType !== "mouse" || event.button !== 0 || !node) return
+    if (node.scrollWidth <= node.clientWidth) return
+    panState.current = {
+      down: true,
+      dragging: false,
+      startX: event.clientX,
+      scrollStart: node.scrollLeft,
+    }
+  }
+
+  const onPanMove = (event: React.PointerEvent) => {
+    const state = panState.current
+    const node = scrollRef.current
+    if (!state.down || !node) return
+    const dx = event.clientX - state.startX
+    if (!state.dragging) {
+      if (Math.abs(dx) < 5) return
+      state.dragging = true
+      setPanning(true)
+      node.setPointerCapture(event.pointerId)
+    }
+    node.scrollLeft = state.scrollStart - dx
+  }
+
+  const onPanEnd = () => {
+    panState.current.down = false
+    setPanning(false)
+    // dragging stays true so the trailing click is suppressed
+  }
+
+  const onPanClickCapture = (event: React.MouseEvent) => {
+    if (panState.current.dragging) {
+      event.preventDefault()
+      event.stopPropagation()
+      panState.current.dragging = false
+    }
+  }
 
   const zoomBy = (factor: number) => {
     const next = clamp(zoom * factor, minZoomRef.current, ZOOM_MAX)
@@ -360,7 +403,17 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       </div>
 
       {ready && (
-        <div ref={scrollRef} className="h-full overflow-x-auto overflow-y-hidden">
+        <div
+          ref={scrollRef}
+          onPointerDown={onPanDown}
+          onPointerMove={onPanMove}
+          onPointerUp={onPanEnd}
+          onPointerCancel={onPanEnd}
+          onClickCapture={onPanClickCapture}
+          className={`h-full select-none overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+            innerWidth > size.width ? (panning ? "cursor-grabbing" : "cursor-grab") : ""
+          }`}
+        >
           <div className="relative mx-auto h-full" style={{ width: innerWidth }}>
             <svg
               className="absolute inset-0"
