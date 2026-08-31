@@ -51,7 +51,7 @@ export function Intro() {
       </motion.p>
       <motion.p
         {...entrance(0.18)}
-        className="mt-4 max-w-sm text-[15px] leading-relaxed text-steel [text-wrap:balance]"
+        className="mt-4 max-w-md text-[15px] leading-relaxed text-steel [text-wrap:balance]"
       >
         {profile.bio}
       </motion.p>
