@@ -40,12 +40,11 @@ const CARD_H = 70
 const CARD_GAP = 10
 const AXIS_GAP = 32
 const AXIS_GAP_BELOW = 52
-const TOP_PAD = 48
-const BOTTOM_PAD = 24
+const TOP_PAD = 28
+const BOTTOM_PAD = 40
 const CURRENT_YEAR_WEIGHT = 4
 const GAP_WEIGHT = 0.5
-const ZOOM_MIN = 1
-const ZOOM_MAX = 5
+const ZOOM_MAX = 32
 
 const spring = { type: "spring", stiffness: 300, damping: 32 } as const
 
@@ -96,6 +95,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const pendingScroll = useRef<number | null>(null)
   const zoomRef = useRef(1)
+  const minZoomRef = useRef(1)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [zoom, setZoom] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -153,7 +153,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       event.preventDefault()
       const scroll = scrollRef.current
       const current = zoomRef.current
-      const next = clamp(current * Math.exp(-event.deltaY * 0.01), ZOOM_MIN, ZOOM_MAX)
+      const next = clamp(current * Math.exp(event.deltaY * 0.01), minZoomRef.current, ZOOM_MAX)
       if (next === current) return
       if (scroll) {
         const viewportX = event.clientX - scroll.getBoundingClientRect().left
@@ -184,7 +184,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   }, [selectedId])
 
   const zoomBy = (factor: number) => {
-    const next = clamp(zoom * factor, ZOOM_MIN, ZOOM_MAX)
+    const next = clamp(zoom * factor, minZoomRef.current, ZOOM_MAX)
     if (next === zoom) return
     const node = scrollRef.current
     if (node) {
@@ -195,13 +195,14 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   }
 
   const height = size.height
-  const axisY = height / 2
+  // Center the axis within the usable card zone, not the full container
+  const axisY = (TOP_PAD + height - BOTTOM_PAD) / 2
   const topZone = axisY - AXIS_GAP - TOP_PAD
   const bottomZone = height - BOTTOM_PAD - (axisY + AXIS_GAP_BELOW)
   const maxLanesTop = Math.max(1, Math.floor((topZone - CARD_H) / (CARD_H + 6)) + 1)
   const maxLanesBottom = Math.max(1, Math.floor((bottomZone - CARD_H) / (CARD_H + 6)) + 1)
 
-  const { x, entryYears, placed, innerWidth, lanesTop, lanesBottom } = useMemo(() => {
+  const { x, entryYears, placed, innerWidth, baseWidth, lanesTop, lanesBottom } = useMemo(() => {
     // Only years that contain an entry (start or end) get axis room; empty runs collapse to a gap
     const yearSet = new Set(items.map((item) => Math.floor(item.year)))
     for (const item of items) {
@@ -273,18 +274,23 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       base *= 1.2
       result = layout(base)
     }
-    const width = base * zoom
-    if (zoom !== 1) result = layout(width)
+    // Shrink is floored at MIN_WIDTH (or the window if narrower), then centered
+    const width = Math.max(base * zoom, Math.min(size.width, MIN_WIDTH))
+    if (width !== base) result = layout(width)
 
     return {
       x: result.scale,
       entryYears: segments.filter((s) => s.weight >= 1).map((s) => s.start),
       placed: result.cards,
       innerWidth: width,
+      baseWidth: base,
       lanesTop: result.top,
       lanesBottom: result.bottom,
     }
   }, [items, size.width, now, currentYear, maxLanesTop, maxLanesBottom, zoom])
+
+  const minZoom = size.width > 0 ? Math.min(1, Math.min(size.width, MIN_WIDTH) / baseWidth) : 0.1
+  minZoomRef.current = minZoom
 
   const stepTop = lanesTop > 1 ? Math.max((topZone - CARD_H) / (lanesTop - 1), 30) : 0
   const stepBottom = lanesBottom > 1 ? Math.max((bottomZone - CARD_H) / (lanesBottom - 1), 30) : 0
@@ -315,7 +321,10 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       className="relative h-full w-full"
       onClick={() => setSelectedId(null)}
     >
-      <div className="pointer-events-none absolute right-6 top-3 z-40 flex items-center gap-4">
+      <div
+        className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-surface/80 py-1 pl-4 pr-1.5 shadow-sm ring-1 ring-separator backdrop-blur"
+        onClick={(event) => event.stopPropagation()}
+      >
         {(
           [
             ["var(--tint)", "Work"],
@@ -324,42 +333,35 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
         ).map(([color, label]) => (
           <span
             key={label}
-            className="flex items-center gap-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-steel"
+            className="flex items-center gap-1.5 whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-steel"
           >
-            <span className="size-2 rounded-full" style={{ background: color }} />
+            <span className="size-2 shrink-0 rounded-full" style={{ background: color }} />
             {label}
           </span>
         ))}
-      </div>
-
-      <div className="absolute bottom-3 right-6 z-40 flex items-center gap-0.5 rounded-full bg-surface/80 p-1 shadow-sm ring-1 ring-separator backdrop-blur">
-        <button
-          aria-label="Zoom out"
-          disabled={zoom <= ZOOM_MIN}
-          onClick={(event) => {
-            event.stopPropagation()
-            zoomBy(1 / 1.5)
-          }}
-          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
-        >
-          −
-        </button>
-        <button
-          aria-label="Zoom in"
-          disabled={zoom >= ZOOM_MAX}
-          onClick={(event) => {
-            event.stopPropagation()
-            zoomBy(1.5)
-          }}
-          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
-        >
-          +
-        </button>
+        <div className="flex items-center gap-0.5 border-l border-separator pl-2">
+          <button
+            aria-label="Zoom out"
+            disabled={zoom <= minZoom}
+            onClick={() => zoomBy(1 / 1.5)}
+            className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            −
+          </button>
+          <button
+            aria-label="Zoom in"
+            disabled={zoom >= ZOOM_MAX}
+            onClick={() => zoomBy(1.5)}
+            className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {ready && (
         <div ref={scrollRef} className="h-full overflow-x-auto overflow-y-hidden">
-          <div className="relative h-full" style={{ width: innerWidth }}>
+          <div className="relative mx-auto h-full" style={{ width: innerWidth }}>
             <svg
               className="absolute inset-0"
               width={innerWidth}
