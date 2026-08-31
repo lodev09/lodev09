@@ -421,41 +421,25 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       onClick={() => setSelectedId(null)}
     >
       <div
-        className="absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-surface/80 py-1 pl-4 pr-1.5 shadow-sm ring-1 ring-separator backdrop-blur"
+        className="absolute right-6 top-1/2 z-40 flex -translate-y-1/2 flex-col gap-0.5 rounded-full bg-surface/80 p-1 shadow-sm ring-1 ring-separator backdrop-blur"
         onClick={(event) => event.stopPropagation()}
       >
-        {(
-          [
-            ["var(--tint)", "Work"],
-            ["var(--oss)", "Open Source"],
-          ] as const
-        ).map(([color, label]) => (
-          <span
-            key={label}
-            className="flex items-center gap-1.5 whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-steel"
-          >
-            <span className="size-2 shrink-0 rounded-full" style={{ background: color }} />
-            {label}
-          </span>
-        ))}
-        <div className="flex items-center gap-0.5 border-l border-separator pl-2">
-          <button
-            aria-label="Zoom out"
-            disabled={zoom <= minZoom}
-            onClick={() => zoomBy(1 / 1.5)}
-            className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
-          >
-            −
-          </button>
-          <button
-            aria-label="Zoom in"
-            disabled={zoom >= ZOOM_MAX}
-            onClick={() => zoomBy(1.5)}
-            className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
-          >
-            +
-          </button>
-        </div>
+        <button
+          aria-label="Zoom in"
+          disabled={zoom >= ZOOM_MAX}
+          onClick={() => zoomBy(1.5)}
+          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          +
+        </button>
+        <button
+          aria-label="Zoom out"
+          disabled={zoom <= minZoom}
+          onClick={() => zoomBy(1 / 1.5)}
+          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-base text-steel transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          −
+        </button>
       </div>
 
       {ready && (
