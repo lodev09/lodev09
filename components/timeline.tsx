@@ -103,9 +103,14 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [panning, setPanning] = useState(false)
   const panState = useRef({ down: false, dragging: false, startX: 0, scrollStart: 0 })
+  const wheelFrame = useRef<number | null>(null)
+  const wheelDelta = useRef(0)
+  const wheelClientX = useRef(0)
   const [entered, setEntered] = useState(!!reduced)
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [measured, setMeasured] = useState<Record<string, number>>({})
+  const gridMajorRef = useRef<HTMLDivElement>(null)
+  const gridMinorRef = useRef<HTMLDivElement>(null)
 
   zoomRef.current = zoom
 
@@ -147,7 +152,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     if (node) node.scrollLeft = node.scrollWidth
   }, [size.width])
 
-  // Pinch / ctrl+wheel zoom anchored at the cursor
+  // Pinch / ctrl+wheel zoom anchored at the cursor, coalesced to one update per frame
   useEffect(() => {
     const node = containerRef.current
     if (!node) return
@@ -155,18 +160,29 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       if (!event.ctrlKey && !event.metaKey) return
       event.preventDefault()
       zoomAnimation.current?.stop()
-      const scroll = scrollRef.current
-      const current = zoomRef.current
-      const next = clamp(current * Math.exp(event.deltaY * 0.01), minZoomRef.current, ZOOM_MAX)
-      if (next === current) return
-      if (scroll) {
-        const viewportX = event.clientX - scroll.getBoundingClientRect().left
-        pendingScroll.current = (scroll.scrollLeft + viewportX) * (next / current) - viewportX
-      }
-      setZoom(next)
+      wheelDelta.current += event.deltaY
+      wheelClientX.current = event.clientX
+      if (wheelFrame.current !== null) return
+      wheelFrame.current = requestAnimationFrame(() => {
+        wheelFrame.current = null
+        const delta = wheelDelta.current
+        wheelDelta.current = 0
+        const scroll = scrollRef.current
+        const current = zoomRef.current
+        const next = clamp(current * Math.exp(delta * 0.01), minZoomRef.current, ZOOM_MAX)
+        if (next === current) return
+        if (scroll) {
+          const viewportX = wheelClientX.current - scroll.getBoundingClientRect().left
+          pendingScroll.current = (scroll.scrollLeft + viewportX) * (next / current) - viewportX
+        }
+        setZoom(next)
+      })
     }
     node.addEventListener("wheel", onWheel, { passive: false })
-    return () => node.removeEventListener("wheel", onWheel)
+    return () => {
+      node.removeEventListener("wheel", onWheel)
+      if (wheelFrame.current !== null) cancelAnimationFrame(wheelFrame.current)
+    }
   }, [])
 
   useLayoutEffect(() => {
@@ -218,6 +234,13 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     panState.current.down = false
     setPanning(false)
     // dragging stays true so the trailing click is suppressed
+  }
+
+  // Keep the viewport-fixed grid aligned with the scrolled canvas without re-rendering
+  const onScroll = () => {
+    const offset = `${-(scrollRef.current?.scrollLeft ?? 0)}px`
+    if (gridMajorRef.current) gridMajorRef.current.style.backgroundPositionX = offset
+    if (gridMinorRef.current) gridMinorRef.current.style.backgroundPositionX = offset
   }
 
   const onPanClickCapture = (event: React.MouseEvent) => {
@@ -444,7 +467,51 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
       {ready && (
         <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            maskImage:
+              "linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent)",
+          }}
+        >
+          <div
+            ref={gridMajorRef}
+            className="absolute inset-0"
+            style={{
+              opacity: 0.1 * (1 - gridFrac),
+              backgroundImage: `repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px ${cellMajor}px)`,
+            }}
+          />
+          <div
+            ref={gridMinorRef}
+            className="absolute inset-0"
+            style={{
+              opacity: 0.1 * gridFrac,
+              backgroundImage: `repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px ${cellMinor}px)`,
+            }}
+          />
+          <svg className="absolute inset-0" width={size.width} height={height}>
+            {gridRows.map((rowY) => (
+              <line
+                key={`row-${rowY}`}
+                x1={0}
+                y1={rowY}
+                x2={size.width}
+                y2={rowY}
+                stroke="var(--steel)"
+                strokeOpacity={0.1}
+              />
+            ))}
+          </svg>
+        </div>
+      )}
+
+      {ready && (
+        <div
           ref={scrollRef}
+          onScroll={onScroll}
           onPointerDown={onPanDown}
           onPointerMove={onPanMove}
           onPointerUp={onPanEnd}
@@ -461,83 +528,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               height={height}
               aria-hidden
             >
-              <defs>
-                <pattern
-                  id="timeline-grid-major"
-                  width={cellMajor}
-                  height={cellMajor}
-                  patternUnits="userSpaceOnUse"
-                >
-                  <line
-                    x1={0}
-                    y1={0}
-                    x2={0}
-                    y2={cellMajor}
-                    stroke="var(--steel)"
-                    strokeOpacity={0.1}
-                  />
-                </pattern>
-                <pattern
-                  id="timeline-grid-minor"
-                  width={cellMinor}
-                  height={cellMinor}
-                  patternUnits="userSpaceOnUse"
-                >
-                  <line
-                    x1={0}
-                    y1={0}
-                    x2={0}
-                    y2={cellMinor}
-                    stroke="var(--steel)"
-                    strokeOpacity={0.1}
-                  />
-                </pattern>
-                <linearGradient id="timeline-grid-fade" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                  <stop offset="0.15" stopColor="#fff" stopOpacity="1" />
-                  <stop offset="0.85" stopColor="#fff" stopOpacity="1" />
-                  <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                </linearGradient>
-                <mask id="timeline-grid-mask">
-                  <rect
-                    x={0}
-                    y={0}
-                    width={innerWidth}
-                    height={height}
-                    fill="url(#timeline-grid-fade)"
-                  />
-                </mask>
-              </defs>
-              <g mask="url(#timeline-grid-mask)">
-                <rect
-                  x={0}
-                  y={0}
-                  width={innerWidth}
-                  height={height}
-                  fill="url(#timeline-grid-major)"
-                  opacity={1 - gridFrac}
-                />
-                <rect
-                  x={0}
-                  y={0}
-                  width={innerWidth}
-                  height={height}
-                  fill="url(#timeline-grid-minor)"
-                  opacity={gridFrac}
-                />
-                {gridRows.map((rowY) => (
-                  <line
-                    key={`row-${rowY}`}
-                    x1={0}
-                    y1={rowY}
-                    x2={innerWidth}
-                    y2={rowY}
-                    stroke="var(--steel)"
-                    strokeOpacity={0.1}
-                  />
-                ))}
-              </g>
-
               {/* Now cursor */}
               <line
                 x1={x(now)}
@@ -683,7 +673,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                         reduced
                           ? { duration: 0 }
                           : entered
-                            ? spring
+                            ? positional
                             : { ...spring, scale: { ...spring, delay: 0.25 + index * 0.045 } }
                       }
                     />
@@ -762,26 +752,24 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                   onMouseEnter={() => setHoveredId(item.id)}
                   onMouseLeave={() => setHoveredId(null)}
                   initial={{
-                    left,
-                    top: collapsedTop,
+                    x: left,
+                    y: collapsedTop + (reduced ? 0 : side === "top" ? 12 : -12),
                     width: CARD_W,
                     height: CARD_H,
                     opacity: reduced ? 1 : 0,
-                    y: reduced ? 0 : side === "top" ? 12 : -12,
                   }}
                   animate={{
-                    left: cardLeft,
-                    top,
+                    x: cardLeft,
+                    y: top,
                     width,
                     height: expanded ? expandedHeight : CARD_H,
                     opacity: dimmed ? 0.35 : 1,
-                    y: 0,
                   }}
                   transition={
                     reduced
                       ? { duration: 0 }
                       : entered
-                        ? spring
+                        ? positional
                         : {
                             ...spring,
                             y: { ...spring, delay: 0.35 + index * 0.045 },
@@ -789,7 +777,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                           }
                   }
                   style={{ zIndex: expanded ? 40 : hoveredId === item.id ? 30 : 10 }}
-                  className={`absolute cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-2.5 text-left shadow-sm outline-none ring-1 ring-separator transition-shadow focus-visible:ring-2 focus-visible:ring-tint ${
+                  className={`absolute left-0 top-0 cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-2.5 text-left shadow-sm outline-none ring-1 ring-separator transition-shadow focus-visible:ring-2 focus-visible:ring-tint ${
                     expanded ? "shadow-lg" : "hover:shadow-md"
                   }`}
                 >
