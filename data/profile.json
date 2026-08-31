@@ -1,0 +1,113 @@
+{
+  "name": "Jovanni Lo",
+  "role": "Lead React Native Developer",
+  "company": {
+    "name": "Lugg",
+    "url": "https://lugg.com"
+  },
+  "avatar": "https://avatars.githubusercontent.com/u/6686328?v=4",
+  "bio": "Self-taught, obsessed with quality, and building open-source libraries for React Native. From the Philippines 🇵🇭",
+  "email": "lodev09@gmail.com",
+  "github": "lodev09",
+  "socials": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/lodev09",
+      "icon": "github"
+    },
+    {
+      "label": "LinkedIn",
+      "href": "https://www.linkedin.com/in/lodev09/",
+      "icon": "linkedin"
+    },
+    {
+      "label": "X",
+      "href": "https://x.com/lodev09",
+      "icon": "x"
+    },
+    {
+      "label": "Email",
+      "href": "mailto:lodev09@gmail.com",
+      "icon": "mail"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Lugg",
+      "role": "React Native Developer",
+      "period": "2025 — Now",
+      "url": "https://lugg.com",
+      "desc": "Mobile development for on-demand moving & delivery — React Native, Expo, and TypeScript.",
+      "tech": [
+        "React Native",
+        "Expo",
+        "TypeScript"
+      ]
+    },
+    {
+      "company": "InfoTrack US",
+      "role": "Lead Mobile Developer",
+      "period": "2022 — 2025",
+      "desc": "Built mobile experiences for legal-tech document and file management products.",
+      "tech": [
+        "React Native",
+        "TypeScript",
+        "Swift",
+        "Kotlin"
+      ]
+    },
+    {
+      "company": "Rocket Lab Pty Ltd",
+      "role": "Full Stack Developer",
+      "period": "2022",
+      "desc": "Full-stack development for client products.",
+      "tech": [
+        "React",
+        "Node.js",
+        "TypeScript"
+      ]
+    },
+    {
+      "company": "EZ Messenger",
+      "role": "Lead Developer",
+      "period": "2013 — 2022",
+      "desc": "Led a team of four engineers. Designed and shipped client & vendor apps, RESTful APIs, and secure server infrastructure.",
+      "tech": [
+        "PHP",
+        "JavaScript",
+        "MySQL"
+      ]
+    },
+    {
+      "company": "LoyalDog Software, LLC",
+      "role": "Senior Programmer",
+      "period": "2012 — 2013",
+      "desc": "Led two developers building PHP and C# software for process-serving clients. Rebuilt the iOS app.",
+      "tech": [
+        "PHP",
+        "C#",
+        "Objective-C"
+      ]
+    },
+    {
+      "company": "FairBank Inc.",
+      "role": "Programmer, MIS Division",
+      "period": "2011 — 2012",
+      "desc": "Built internal business applications — asset management and employee appraisal systems.",
+      "tech": [
+        "VB6",
+        "MySQL"
+      ]
+    },
+    {
+      "company": "GWAVE Dumaguete",
+      "role": "System Developer & DBA",
+      "period": "2009 — 2011",
+      "desc": "Developer and database administrator for the GWAVE Legal Documentation System.",
+      "tech": [
+        "PHP",
+        "MySQL"
+      ]
+    }
+  ]
+}
