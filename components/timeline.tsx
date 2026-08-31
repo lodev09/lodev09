@@ -109,8 +109,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const [entered, setEntered] = useState(!!reduced)
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [measured, setMeasured] = useState<Record<string, number>>({})
-  const gridMajorRef = useRef<HTMLDivElement>(null)
-  const gridMinorRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   zoomRef.current = zoom
 
@@ -185,12 +184,19 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     }
   }, [])
 
+  // Keep the viewport-fixed grid scroll-locked to the canvas without re-rendering
+  const syncGrid = () => {
+    if (gridRef.current)
+      gridRef.current.style.backgroundPositionX = `${-(scrollRef.current?.scrollLeft ?? 0)}px`
+  }
+
   useLayoutEffect(() => {
     if (pendingScroll.current !== null && scrollRef.current) {
       scrollRef.current.scrollLeft = pendingScroll.current
       pendingScroll.current = null
     }
-  }, [zoom])
+    syncGrid()
+  }, [zoom, size.width])
 
   // Replace the estimated expanded height with the real content height
   useLayoutEffect(() => {
@@ -234,13 +240,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     panState.current.down = false
     setPanning(false)
     // dragging stays true so the trailing click is suppressed
-  }
-
-  // Keep the viewport-fixed grid aligned with the scrolled canvas without re-rendering
-  const onScroll = () => {
-    const offset = `${-(scrollRef.current?.scrollLeft ?? 0)}px`
-    if (gridMajorRef.current) gridMajorRef.current.style.backgroundPositionX = offset
-    if (gridMinorRef.current) gridMinorRef.current.style.backgroundPositionX = offset
   }
 
   const onPanClickCapture = (event: React.MouseEvent) => {
@@ -388,12 +387,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
   const positional = reduced ? { duration: 0 } : spring
 
-  // Uniform grid that stretches with zoom: cells stay in the 40–80px band, and a
-  // half-size layer crossfades in as you zoom so subdivision never snaps
-  const gridFrac = Math.log2(zoom) - Math.floor(Math.log2(zoom))
-  const cellMajor = 40 * Math.pow(2, gridFrac)
-  const cellMinor = cellMajor / 2
-
   // Horizontal rows radiate from the axis, skipping the top/bottom edge zones
   const gridRows: number[] = []
   for (let offset = 40; ; offset += 40) {
@@ -477,19 +470,11 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
           }}
         >
           <div
-            ref={gridMajorRef}
-            className="absolute inset-0"
+            ref={gridRef}
+            className="absolute inset-0 opacity-10"
             style={{
-              opacity: 0.1 * (1 - gridFrac),
-              backgroundImage: `repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px ${cellMajor}px)`,
-            }}
-          />
-          <div
-            ref={gridMinorRef}
-            className="absolute inset-0"
-            style={{
-              opacity: 0.1 * gridFrac,
-              backgroundImage: `repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px ${cellMinor}px)`,
+              backgroundImage:
+                "repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px 40px)",
             }}
           />
           <svg className="absolute inset-0" width={size.width} height={height}>
@@ -511,7 +496,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       {ready && (
         <div
           ref={scrollRef}
-          onScroll={onScroll}
+          onScroll={syncGrid}
           onPointerDown={onPanDown}
           onPointerMove={onPanMove}
           onPointerUp={onPanEnd}
