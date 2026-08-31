@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { motion, useReducedMotion } from "motion/react"
+import { animate, motion, useReducedMotion } from "motion/react"
 import { scaleLinear, linkVertical } from "d3"
 import profile from "@/data/profile.json"
 import { MONTHS, formatPeriod, toFractionalYear } from "@/lib/period"
@@ -39,7 +39,7 @@ const CARD_EXPANDED_W = 268
 const CARD_H = 70
 const CARD_GAP = 10
 const AXIS_GAP = 32
-const AXIS_GAP_BELOW = 52
+const AXIS_GAP_BELOW = 44
 const TOP_PAD = 28
 const BOTTOM_PAD = 40
 const CURRENT_YEAR_WEIGHT = 4
@@ -96,6 +96,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const pendingScroll = useRef<number | null>(null)
   const zoomRef = useRef(1)
   const minZoomRef = useRef(1)
+  const zoomAnimation = useRef<ReturnType<typeof animate> | null>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [zoom, setZoom] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -153,6 +154,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     const onWheel = (event: WheelEvent) => {
       if (!event.ctrlKey && !event.metaKey) return
       event.preventDefault()
+      zoomAnimation.current?.stop()
       const scroll = scrollRef.current
       const current = zoomRef.current
       const next = clamp(current * Math.exp(event.deltaY * 0.01), minZoomRef.current, ZOOM_MAX)
@@ -227,14 +229,21 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   }
 
   const zoomBy = (factor: number) => {
-    const next = clamp(zoom * factor, minZoomRef.current, ZOOM_MAX)
-    if (next === zoom) return
+    const start = zoom
+    const target = clamp(start * factor, minZoomRef.current, ZOOM_MAX)
+    if (target === start) return
     const node = scrollRef.current
-    if (node) {
-      const center = node.clientWidth / 2
-      pendingScroll.current = (node.scrollLeft + center) * (next / zoom) - center
-    }
-    setZoom(next)
+    const center = node ? node.clientWidth / 2 : 0
+    const scrollStart = node ? node.scrollLeft : 0
+    zoomAnimation.current?.stop()
+    zoomAnimation.current = animate(start, target, {
+      duration: 0.35,
+      ease: [0.25, 0.1, 0.25, 1],
+      onUpdate: (value) => {
+        if (node) pendingScroll.current = (scrollStart + center) * (value / start) - center
+        setZoom(value)
+      },
+    })
   }
 
   const height = size.height
@@ -242,10 +251,20 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const axisY = (TOP_PAD + height - BOTTOM_PAD) / 2
   const topZone = axisY - AXIS_GAP - TOP_PAD
   const bottomZone = height - BOTTOM_PAD - (axisY + AXIS_GAP_BELOW)
-  const maxLanesTop = Math.max(1, Math.floor((topZone - CARD_H) / (CARD_H + 6)) + 1)
-  const maxLanesBottom = Math.max(1, Math.floor((bottomZone - CARD_H) / (CARD_H + 6)) + 1)
+  const maxLanesTop = Math.max(1, Math.floor((topZone - CARD_H) / CARD_H) + 1)
+  const maxLanesBottom = Math.max(1, Math.floor((bottomZone - CARD_H) / CARD_H) + 1)
 
-  const { x, entryYears, placed, innerWidth, baseWidth, lanesTop, lanesBottom } = useMemo(() => {
+  const {
+    x,
+    entryYears,
+    placed,
+    innerWidth,
+    contentStart,
+    contentWidth,
+    baseWidth,
+    lanesTop,
+    lanesBottom,
+  } = useMemo(() => {
     // Only years that contain an entry (start or end) get axis room; empty runs collapse to a gap
     const yearSet = new Set(items.map((item) => Math.floor(item.year)))
     for (const item of items) {
@@ -274,10 +293,12 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     }
     const totalWeight = segments.reduce((sum, segment) => sum + segment.weight, 0)
 
-    const layout = (width: number) => {
-      const unit = (width - PAD_X * 2) / totalWeight
+    const layout = (contentW: number, canvasW: number) => {
+      // Content narrower than the canvas is centered; the canvas never shrinks
+      const offset = (canvasW - contentW) / 2
+      const unit = (contentW - PAD_X * 2) / totalWeight
       const domain = [minYear]
-      const range = [PAD_X]
+      const range = [offset + PAD_X]
       for (const segment of segments) {
         domain.push(segment.end)
         range.push(range[range.length - 1] + segment.weight * unit)
@@ -291,7 +312,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       }
       const cards = items.map((item) => {
         const dotX = scale(item.year)
-        const left = clamp(dotX - CARD_W / 2, EDGE_PAD, width - CARD_W - EDGE_PAD)
+        const left = clamp(dotX - CARD_W / 2, EDGE_PAD, canvasW - CARD_W - EDGE_PAD)
         const topLane = fit(topEnds, left)
         const bottomLane = fit(bottomEnds, left)
         const preferTop = item.kind === "oss"
@@ -308,24 +329,27 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
     // Widen (scrollable) until the lanes fit the available height without overlap
     let base = Math.max(size.width, MIN_WIDTH)
-    let result = layout(base)
+    let result = layout(base, base)
     for (
       let attempt = 0;
       attempt < 8 && (result.top > maxLanesTop || result.bottom > maxLanesBottom);
       attempt++
     ) {
       base *= 1.2
-      result = layout(base)
+      result = layout(base, base)
     }
-    // Shrink is floored at MIN_WIDTH (or the window if narrower), then centered
-    const width = Math.max(base * zoom, Math.min(size.width, MIN_WIDTH))
-    if (width !== base) result = layout(width)
+    // Shrink is floored at MIN_WIDTH (or the window if narrower)
+    const contentWidth = Math.max(base * zoom, Math.min(size.width, MIN_WIDTH))
+    const canvasWidth = Math.max(contentWidth, size.width)
+    result = layout(contentWidth, canvasWidth)
 
     return {
       x: result.scale,
       entryYears: segments.filter((s) => s.weight >= 1).map((s) => s.start),
       placed: result.cards,
-      innerWidth: width,
+      innerWidth: canvasWidth,
+      contentStart: (canvasWidth - contentWidth) / 2,
+      contentWidth,
       baseWidth: base,
       lanesTop: result.top,
       lanesBottom: result.bottom,
@@ -340,6 +364,22 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const leader = linkVertical()
 
   const positional = reduced ? { duration: 0 } : spring
+
+  // Uniform grid that stretches with zoom: cells stay in the 40–80px band, and a
+  // half-size layer crossfades in as you zoom so subdivision never snaps
+  const gridFrac = Math.log2(zoom) - Math.floor(Math.log2(zoom))
+  const cellMajor = 40 * Math.pow(2, gridFrac)
+  const cellMinor = cellMajor / 2
+
+  // Horizontal rows radiate from the axis, skipping the top/bottom edge zones
+  const gridRows: number[] = []
+  for (let offset = 40; ; offset += 40) {
+    const up = axisY - offset
+    const down = axisY + offset
+    if (up < 24 && down > height - 24) break
+    if (up >= 24) gridRows.push(up)
+    if (down <= height - 24) gridRows.push(down)
+  }
 
   const ready = size.width > 0 && height > 0
 
@@ -365,7 +405,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       onClick={() => setSelectedId(null)}
     >
       <div
-        className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-surface/80 py-1 pl-4 pr-1.5 shadow-sm ring-1 ring-separator backdrop-blur"
+        className="absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-surface/80 py-1 pl-4 pr-1.5 shadow-sm ring-1 ring-separator backdrop-blur"
         onClick={(event) => event.stopPropagation()}
       >
         {(
@@ -421,6 +461,83 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               height={height}
               aria-hidden
             >
+              <defs>
+                <pattern
+                  id="timeline-grid-major"
+                  width={cellMajor}
+                  height={cellMajor}
+                  patternUnits="userSpaceOnUse"
+                >
+                  <line
+                    x1={0}
+                    y1={0}
+                    x2={0}
+                    y2={cellMajor}
+                    stroke="var(--steel)"
+                    strokeOpacity={0.1}
+                  />
+                </pattern>
+                <pattern
+                  id="timeline-grid-minor"
+                  width={cellMinor}
+                  height={cellMinor}
+                  patternUnits="userSpaceOnUse"
+                >
+                  <line
+                    x1={0}
+                    y1={0}
+                    x2={0}
+                    y2={cellMinor}
+                    stroke="var(--steel)"
+                    strokeOpacity={0.1}
+                  />
+                </pattern>
+                <linearGradient id="timeline-grid-fade" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                  <stop offset="0.15" stopColor="#fff" stopOpacity="1" />
+                  <stop offset="0.85" stopColor="#fff" stopOpacity="1" />
+                  <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                </linearGradient>
+                <mask id="timeline-grid-mask">
+                  <rect
+                    x={0}
+                    y={0}
+                    width={innerWidth}
+                    height={height}
+                    fill="url(#timeline-grid-fade)"
+                  />
+                </mask>
+              </defs>
+              <g mask="url(#timeline-grid-mask)">
+                <rect
+                  x={0}
+                  y={0}
+                  width={innerWidth}
+                  height={height}
+                  fill="url(#timeline-grid-major)"
+                  opacity={1 - gridFrac}
+                />
+                <rect
+                  x={0}
+                  y={0}
+                  width={innerWidth}
+                  height={height}
+                  fill="url(#timeline-grid-minor)"
+                  opacity={gridFrac}
+                />
+                {gridRows.map((rowY) => (
+                  <line
+                    key={`row-${rowY}`}
+                    x1={0}
+                    y1={rowY}
+                    x2={innerWidth}
+                    y2={rowY}
+                    stroke="var(--steel)"
+                    strokeOpacity={0.1}
+                  />
+                ))}
+              </g>
+
               {/* Now cursor */}
               <line
                 x1={x(now)}
@@ -434,9 +551,9 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
               {/* Axis */}
               <motion.line
-                x1={PAD_X}
+                x1={contentStart + PAD_X}
                 y1={axisY}
-                x2={innerWidth - PAD_X}
+                x2={contentStart + contentWidth - PAD_X}
                 y2={axisY}
                 stroke="var(--steel)"
                 strokeOpacity={0.35}

@@ -105,7 +105,7 @@ export default async function Home() {
 
           <section
             aria-label="Career timeline"
-            className="relative min-h-[320px] w-full flex-1"
+            className="relative mt-8 min-h-[320px] w-full flex-1 sm:mt-10"
           >
             <Timeline projects={projects} />
           </section>
