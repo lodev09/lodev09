@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion, useReducedMotion } from "motion/react"
 import profile from "@/data/profile.json"
+import { formatPeriod } from "@/lib/period"
 import { TechIcon } from "./tech-icons"
 
 const VISIBLE = 3
@@ -41,7 +42,7 @@ export function Experience() {
                   job.company
                 )}
               </h3>
-              <p className="font-mono text-xs text-steel">{job.period}</p>
+              <p className="font-mono text-xs text-steel">{formatPeriod(job.start, job.end)}</p>
             </div>
             <p className="mt-0.5 text-sm font-medium">{job.role}</p>
             <p className="mt-1 text-sm leading-relaxed text-steel">{job.desc}</p>
