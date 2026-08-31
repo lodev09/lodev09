@@ -1,22 +1,30 @@
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
+import profile from "@/data/profile.json"
 import "./globals.css"
 
+const title = `${profile.name} — ${profile.role}`
+const description = `${profile.role} at ${profile.company.name}. ${profile.bio}`
+
 export const metadata: Metadata = {
-  title: "Jovanni Lo — React Native Developer",
-  description:
-    "Lead React Native Developer at Lugg. Maintainer of react-native-true-sheet and other open-source libraries. Self-taught, passionate about quality.",
+  title,
+  description,
   metadataBase: new URL("https://lodev09.com"),
+  alternates: { canonical: "/" },
+  authors: [{ name: profile.name, url: "https://lodev09.com" }],
+  creator: profile.name,
   openGraph: {
-    title: "Jovanni Lo — React Native Developer",
-    description:
-      "Lead React Native Developer at Lugg. Maintainer of react-native-true-sheet and other open-source libraries.",
+    title,
+    description,
     url: "https://lodev09.com",
-    siteName: "Jovanni Lo",
-    type: "website",
+    siteName: profile.name,
+    type: "profile",
+    locale: "en_US",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    title,
+    description,
     creator: "@lodev09",
   },
 }

@@ -65,6 +65,18 @@ async function getProjects(): Promise<Project[]> {
   }
 }
 
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  jobTitle: profile.role,
+  worksFor: { "@type": "Organization", name: profile.company.name, url: profile.company.url },
+  url: "https://lodev09.com",
+  image: profile.avatar,
+  email: `mailto:${profile.email}`,
+  sameAs: profile.socials.map((social) => social.href),
+}
+
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-steel">
@@ -82,6 +94,10 @@ export default async function Home() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
       <div className="fixed right-5 top-5 z-50">
         <ThemeToggle />
       </div>
