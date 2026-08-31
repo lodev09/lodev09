@@ -121,7 +121,8 @@ export default async function Home() {
       </div>
 
       <main>
-        <div className="flex h-dvh flex-col">
+        {/* svh keeps the timeline height stable while the mobile URL bar collapses */}
+        <div className="flex h-svh flex-col">
           <header className="mx-auto w-full max-w-xl px-6 pt-20 sm:pt-24">
             <Intro />
           </header>

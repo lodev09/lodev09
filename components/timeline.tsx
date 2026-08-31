@@ -106,6 +106,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const wheelFrame = useRef<number | null>(null)
   const wheelDelta = useRef(0)
   const wheelClientX = useRef(0)
+  const pinchState = useRef<{ dist: number; zoom: number } | null>(null)
   const [entered, setEntered] = useState(!!reduced)
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [measured, setMeasured] = useState<Record<string, number>>({})
@@ -181,6 +182,52 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     return () => {
       node.removeEventListener("wheel", onWheel)
       if (wheelFrame.current !== null) cancelAnimationFrame(wheelFrame.current)
+    }
+  }, [])
+
+  // Two-finger pinch zoom anchored at the touch midpoint
+  useEffect(() => {
+    const node = containerRef.current
+    if (!node) return
+    const getDist = (touches: TouchList) =>
+      Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length === 2) {
+        zoomAnimation.current?.stop()
+        pinchState.current = { dist: getDist(event.touches), zoom: zoomRef.current }
+      }
+    }
+    const onTouchMove = (event: TouchEvent) => {
+      const pinch = pinchState.current
+      if (!pinch || event.touches.length !== 2) return
+      event.preventDefault()
+      const scroll = scrollRef.current
+      const current = zoomRef.current
+      const next = clamp(
+        pinch.zoom * (getDist(event.touches) / pinch.dist),
+        minZoomRef.current,
+        ZOOM_MAX
+      )
+      if (next === current) return
+      if (scroll) {
+        const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2
+        const viewportX = midX - scroll.getBoundingClientRect().left
+        pendingScroll.current = (scroll.scrollLeft + viewportX) * (next / current) - viewportX
+      }
+      setZoom(next)
+    }
+    const onTouchEnd = (event: TouchEvent) => {
+      if (event.touches.length < 2) pinchState.current = null
+    }
+    node.addEventListener("touchstart", onTouchStart, { passive: true })
+    node.addEventListener("touchmove", onTouchMove, { passive: false })
+    node.addEventListener("touchend", onTouchEnd)
+    node.addEventListener("touchcancel", onTouchEnd)
+    return () => {
+      node.removeEventListener("touchstart", onTouchStart)
+      node.removeEventListener("touchmove", onTouchMove)
+      node.removeEventListener("touchend", onTouchEnd)
+      node.removeEventListener("touchcancel", onTouchEnd)
     }
   }, [])
 
@@ -417,7 +464,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full"
+      className="relative h-full w-full [touch-action:pan-x_pan-y]"
       onClick={() => setSelectedId(null)}
     >
       <div
