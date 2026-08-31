@@ -32,16 +32,16 @@ type Item = {
 }
 
 const MIN_WIDTH = 760
-const PAD_X = 48
-const EDGE_PAD = 20
+const PAD_X = 72
+const EDGE_PAD = 24
 const CARD_W = 176
 const CARD_EXPANDED_W = 268
 const CARD_H = 70
 const CARD_GAP = 10
-const AXIS_GAP = 26
-const AXIS_GAP_BELOW = 44
-const TOP_PAD = 40
-const BOTTOM_PAD = 10
+const AXIS_GAP = 32
+const AXIS_GAP_BELOW = 52
+const TOP_PAD = 48
+const BOTTOM_PAD = 24
 const CURRENT_YEAR_WEIGHT = 4
 const GAP_WEIGHT = 0.5
 const ZOOM_MIN = 1
@@ -278,9 +278,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
     return {
       x: result.scale,
-      entryYears: segments
-        .filter((s) => s.weight >= 1)
-        .map((s) => ({ year: s.start, end: s.end })),
+      entryYears: segments.filter((s) => s.weight >= 1).map((s) => s.start),
       placed: result.cards,
       innerWidth: width,
       lanesTop: result.top,
@@ -295,13 +293,12 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
   const positional = reduced ? { duration: 0 } : spring
 
   const ready = size.width > 0 && height > 0
-  const bandStart = ready ? x(currentYear) : 0
 
   // Skip year labels that would collide with the previous one; the current year always wins
   const labelYears = useMemo(() => {
     const kept: { year: number; center: number }[] = []
-    for (const { year, end } of entryYears) {
-      const center = (x(year) + x(end)) / 2
+    for (const year of entryYears) {
+      const center = x(year)
       const previous = kept[kept.length - 1]
       if (previous && center - previous.center < 44) {
         if (year !== currentYear) continue
@@ -318,7 +315,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       className="relative h-full w-full"
       onClick={() => setSelectedId(null)}
     >
-      <div className="pointer-events-none absolute right-5 top-2 z-40 flex items-center gap-4">
+      <div className="pointer-events-none absolute right-6 top-3 z-40 flex items-center gap-4">
         {(
           [
             ["var(--tint)", "Work"],
@@ -335,7 +332,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
         ))}
       </div>
 
-      <div className="absolute bottom-4 right-4 z-40 flex items-center gap-0.5 rounded-full bg-surface/80 p-1 shadow-sm ring-1 ring-separator backdrop-blur">
+      <div className="absolute bottom-3 right-6 z-40 flex items-center gap-0.5 rounded-full bg-surface/80 p-1 shadow-sm ring-1 ring-separator backdrop-blur">
         <button
           aria-label="Zoom out"
           disabled={zoom <= ZOOM_MIN}
@@ -369,19 +366,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               height={height}
               aria-hidden
             >
-              {/* Current-year band, bleeding to the right edge */}
-              <motion.rect
-                x={bandStart}
-                y={0}
-                width={Math.max(innerWidth - bandStart, 0)}
-                height={height}
-                fill="var(--tint)"
-                fillOpacity={0.05}
-                initial={reduced ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              />
-
               {/* Now cursor */}
               <line
                 x1={x(now)}
@@ -399,7 +383,8 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                 y1={axisY}
                 x2={innerWidth - PAD_X}
                 y2={axisY}
-                stroke="var(--separator)"
+                stroke="var(--steel)"
+                strokeOpacity={0.35}
                 strokeWidth={1}
                 initial={reduced ? false : { pathLength: 0 }}
                 animate={{ pathLength: 1 }}
@@ -407,12 +392,19 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               />
 
               {/* Year ticks + labels (entry years only) */}
-              {entryYears.map(({ year, end }) => (
+              {entryYears.map((year) => (
                 <motion.g key={year} animate={{ x: x(year) }} transition={positional}>
-                  <line x1={0} y1={axisY} x2={0} y2={axisY + 5} stroke="var(--separator)" />
+                  <line
+                    x1={0}
+                    y1={axisY - 6}
+                    x2={0}
+                    y2={axisY + 6}
+                    stroke="var(--steel)"
+                    strokeOpacity={0.6}
+                  />
                   {labelYears.has(year) && (
                     <text
-                      x={(x(end) - x(year)) / 2}
+                      x={0}
                       y={axisY + 22}
                       textAnchor="middle"
                       className={

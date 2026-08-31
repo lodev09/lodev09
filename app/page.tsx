@@ -1,10 +1,10 @@
 import { Experience } from "@/components/experience"
-import { HomeShell } from "@/components/home-shell"
+import { Intro } from "@/components/intro"
 import { Reveal } from "@/components/reveal"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { StarIcon } from "@/components/icons"
 import { TechIcon } from "@/components/tech-icons"
-import type { TimelineProject } from "@/components/timeline"
+import { Timeline, type TimelineProject } from "@/components/timeline"
 import profile from "@/data/profile.json"
 
 const GITHUB_HEADERS: HeadersInit = process.env.GITHUB_TOKEN
@@ -97,83 +97,93 @@ export default async function Home() {
         <ThemeToggle />
       </div>
 
-      <HomeShell
-        projects={projects}
-        list={
-          <>
-            <Grabber />
+      <main>
+        <div className="flex h-dvh flex-col">
+          <header className="mx-auto w-full max-w-xl px-6 pt-20 sm:pt-24">
+            <Intro />
+          </header>
 
-            <Reveal>
-              <Experience />
-            </Reveal>
+          <section
+            aria-label="Career timeline"
+            className="relative min-h-[320px] w-full flex-1"
+          >
+            <Timeline projects={projects} />
+          </section>
+        </div>
 
-            <Grabber />
+        <div className="mx-auto w-full max-w-xl px-6 pb-24 sm:pb-28">
+          <Grabber />
 
-            <Reveal>
-              <section>
-                <SectionHeading>Open Source</SectionHeading>
-                <div className="mt-4">
-                  {projects.map((project) => (
-                    <a
-                      key={project.name}
-                      href={project.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group -mx-4 block rounded-2xl px-4 py-3.5 transition-colors hover:bg-surface"
-                    >
-                      <div className="flex items-baseline justify-between gap-3">
-                        <h3 className="break-all font-mono text-sm font-medium transition-colors group-hover:text-tint">
-                          {project.name}
-                        </h3>
-                        <span className="flex shrink-0 items-center gap-1 font-mono text-xs text-steel">
-                          <StarIcon className="size-3 text-amber-500" />
-                          {project.stars.toLocaleString("en-US")}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-steel">{project.desc}</p>
-                      {project.languages.length > 0 && (
-                        <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
-                          {project.languages.map((language) => (
-                            <TechIcon key={language} name={language} />
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  ))}
-                </div>
-                <a
-                  href={`https://github.com/${profile.github}?tab=repositories`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-block text-sm font-medium text-tint hover:underline"
-                >
-                  All repositories →
-                </a>
-              </section>
-            </Reveal>
+          <Reveal>
+            <Experience />
+          </Reveal>
 
-            <Grabber />
+          <Grabber />
 
-            <Reveal>
-              <footer className="text-center">
-                <p className="text-[15px] text-steel">
-                  Did you find anything interesting?{" "}
+          <Reveal>
+            <section>
+              <SectionHeading>Open Source</SectionHeading>
+              <div className="mt-4">
+                {projects.map((project) => (
                   <a
-                    href={`mailto:${profile.email}`}
-                    className="font-medium text-ink transition-colors hover:text-tint"
+                    key={project.name}
+                    href={project.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group -mx-4 block rounded-2xl px-4 py-3.5 transition-colors hover:bg-surface"
                   >
-                    Reach out
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="break-all font-mono text-sm font-medium transition-colors group-hover:text-tint">
+                        {project.name}
+                      </h3>
+                      <span className="flex shrink-0 items-center gap-1 font-mono text-xs text-steel">
+                        <StarIcon className="size-3 text-amber-500" />
+                        {project.stars.toLocaleString("en-US")}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-steel">{project.desc}</p>
+                    {project.languages.length > 0 && (
+                      <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
+                        {project.languages.map((language) => (
+                          <TechIcon key={language} name={language} />
+                        ))}
+                      </div>
+                    )}
                   </a>
-                </p>
-                <p className="mt-8 font-mono text-xs text-steel/70">
-                  © {new Date().getFullYear()} {profile.name} · Built with React — ironically, not
-                  Native.
-                </p>
-              </footer>
-            </Reveal>
-          </>
-        }
-      />
+                ))}
+              </div>
+              <a
+                href={`https://github.com/${profile.github}?tab=repositories`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-block text-sm font-medium text-tint hover:underline"
+              >
+                All repositories →
+              </a>
+            </section>
+          </Reveal>
+
+          <Grabber />
+
+          <Reveal>
+            <footer className="text-center">
+              <p className="text-[15px] text-steel">
+                Did you find anything interesting?{" "}
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="font-medium text-ink transition-colors hover:text-tint"
+                >
+                  Reach out
+                </a>
+              </p>
+              <p className="mt-8 font-mono text-xs text-steel/70">
+                © {new Date().getFullYear()} {profile.name} · Built with React — ironically, not
+                Native.
+              </p>
+            </footer>
+          </Reveal>
+        </div>
+      </main>
     </>
   )
 }
