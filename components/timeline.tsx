@@ -45,6 +45,7 @@ const BOTTOM_PAD = 40
 const CURRENT_YEAR_WEIGHT = 4
 const GAP_WEIGHT = 0.5
 const ZOOM_MAX = 32
+const GRID_SIZE = 32
 
 const spring = { type: "spring", stiffness: 300, damping: 32 } as const
 
@@ -138,13 +139,20 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     return () => clearTimeout(timer)
   }, [])
 
+  // Any click outside a card (including outside the timeline) dismisses the selection
   useEffect(() => {
+    if (!selectedId) return
+    const dismiss = () => setSelectedId(null)
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedId(null)
+      if (event.key === "Escape") dismiss()
     }
+    document.addEventListener("click", dismiss)
     window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [])
+    return () => {
+      document.removeEventListener("click", dismiss)
+      window.removeEventListener("keydown", onKeyDown)
+    }
+  }, [selectedId])
 
   // Start scrolled to the current year on narrow screens
   useEffect(() => {
@@ -436,7 +444,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
 
   // Horizontal rows radiate from the axis, skipping the top/bottom edge zones
   const gridRows: number[] = []
-  for (let offset = 40; ; offset += 40) {
+  for (let offset = GRID_SIZE; ; offset += GRID_SIZE) {
     const up = axisY - offset
     const down = axisY + offset
     if (up < 24 && down > height - 24) break
@@ -465,7 +473,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     <div
       ref={containerRef}
       className="relative h-full w-full [touch-action:pan-x_pan-y]"
-      onClick={() => setSelectedId(null)}
     >
       <div
         className="absolute right-6 top-1/2 z-40 flex -translate-y-1/2 flex-col gap-0.5 rounded-full bg-surface/80 p-1 shadow-sm ring-1 ring-separator backdrop-blur"
@@ -490,9 +497,11 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
       </div>
 
       {ready && (
-        <div
+        <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-0"
+          animate={{ opacity: selectedId ? 0 : 1 }}
+          transition={positional}
           style={{
             maskImage:
               "linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent)",
@@ -504,8 +513,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
             ref={gridRef}
             className="absolute inset-0 opacity-10"
             style={{
-              backgroundImage:
-                "repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px 40px)",
+              backgroundImage: `repeating-linear-gradient(to right, var(--steel) 0 1px, transparent 1px ${GRID_SIZE}px)`,
             }}
           />
           <svg className="absolute inset-0" width={size.width} height={height}>
@@ -521,7 +529,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               />
             ))}
           </svg>
-        </div>
+        </motion.div>
       )}
 
       {ready && (
