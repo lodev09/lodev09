@@ -34,9 +34,9 @@ type Item = {
 const MIN_WIDTH = 760
 const PAD_X = 72
 const EDGE_PAD = 24
-const CARD_W = 176
-const CARD_EXPANDED_W = 268
-const CARD_H = 70
+const CARD_W = 184
+const CARD_EXPANDED_W = 280
+const CARD_H = 78
 const CARD_GAP = 10
 const AXIS_GAP = 32
 const AXIS_GAP_BELOW = 44
@@ -258,7 +258,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
     if (!selectedId) return
     const node = contentRefs.current[selectedId]
     if (!node) return
-    const contentHeight = node.scrollHeight + 20
+    const contentHeight = node.scrollHeight + 28
     setMeasured((prev) =>
       prev[selectedId] === contentHeight ? prev : { ...prev, [selectedId]: contentHeight }
     )
@@ -801,7 +801,7 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                           }
                   }
                   style={{ zIndex: expanded ? 40 : hoveredId === item.id ? 30 : 10 }}
-                  className={`absolute left-0 top-0 cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-2.5 text-left outline-none ring-1 focus-visible:ring-2 focus-visible:ring-tint ${
+                  className={`absolute left-0 top-0 cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-3.5 text-left outline-none ring-1 focus-visible:ring-2 focus-visible:ring-tint ${
                     expanded ? "ring-steel/40" : "ring-separator hover:ring-steel/30"
                   }`}
                 >
@@ -819,10 +819,10 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                       {item.period}
                     </span>
                   </div>
-                  <h3 className="mt-1 truncate text-[13px] font-semibold leading-tight tracking-tight">
+                  <h3 className="mt-1.5 truncate text-[13px] font-semibold leading-tight tracking-tight">
                     {item.title}
                   </h3>
-                  <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] leading-tight text-steel">
+                  <p className="mt-1 flex items-center gap-1 truncate text-[11px] leading-tight text-steel">
                     {item.kind === "oss" ? (
                       <>
                         <StarIcon className="size-3 shrink-0 text-amber-500" />

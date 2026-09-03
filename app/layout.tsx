@@ -1,7 +1,11 @@
 import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import profile from "@/data/profile.json"
 import "./globals.css"
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" })
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 const title = `${profile.name} — ${profile.role}`
 const description = `${profile.role} at ${profile.company.name}. ${profile.bio}`
@@ -33,7 +37,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
