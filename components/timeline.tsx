@@ -801,8 +801,8 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                           }
                   }
                   style={{ zIndex: expanded ? 40 : hoveredId === item.id ? 30 : 10 }}
-                  className={`absolute left-0 top-0 cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-2.5 text-left shadow-sm outline-none ring-1 ring-separator transition-shadow focus-visible:ring-2 focus-visible:ring-tint ${
-                    expanded ? "shadow-lg" : "hover:shadow-md"
+                  className={`absolute left-0 top-0 cursor-pointer select-none overflow-hidden rounded-xl bg-surface p-2.5 text-left outline-none ring-1 focus-visible:ring-2 focus-visible:ring-tint ${
+                    expanded ? "ring-steel/40" : "ring-separator hover:ring-steel/30"
                   }`}
                 >
                   <div
