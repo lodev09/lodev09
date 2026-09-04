@@ -36,9 +36,11 @@
     {
       "company": "Lugg",
       "role": "React Native Developer",
+      "location": "San Francisco, CA",
       "start": "2025-03",
       "end": null,
       "url": "https://lugg.com",
+      "logo": "/logos/lugg.png",
       "desc": "Mobile development for on-demand moving & delivery — React Native, Expo, and TypeScript.",
       "tech": [
         "React Native",
@@ -49,8 +51,11 @@
     {
       "company": "InfoTrack US",
       "role": "Lead Mobile Developer",
+      "location": "San Francisco, CA",
       "start": "2022-12",
       "end": "2025-03",
+      "url": "https://www.infotrack.com",
+      "logo": "/logos/infotrack.png",
       "desc": "Built mobile experiences for legal-tech document and file management products.",
       "tech": [
         "React Native",
@@ -62,8 +67,11 @@
     {
       "company": "Rocket Lab Pty Ltd",
       "role": "Full Stack Developer",
+      "location": "Melbourne, Australia",
       "start": "2022-05",
       "end": "2022-12",
+      "url": "https://www.rocketlab.com.au",
+      "logo": "/logos/rocketlab.png",
       "desc": "Full-stack development for client products.",
       "tech": [
         "React",
@@ -74,8 +82,11 @@
     {
       "company": "EZ Messenger",
       "role": "Lead Developer",
+      "location": "Oklahoma City, OK",
       "start": "2013-04",
       "end": "2022-04",
+      "url": "https://www.ezmessenger.com",
+      "logo": "/logos/ezmessenger.png",
       "desc": "Led a team of four engineers. Designed and shipped client & vendor apps, RESTful APIs, and secure server infrastructure.",
       "tech": [
         "PHP",
@@ -86,6 +97,7 @@
     {
       "company": "LoyalDog Software, LLC",
       "role": "Senior Programmer",
+      "location": "Sacramento, CA",
       "start": "2012-02",
       "end": "2013-04",
       "desc": "Led two developers building PHP and C# software for process-serving clients. Rebuilt the iOS app.",
@@ -98,6 +110,7 @@
     {
       "company": "FairBank Inc.",
       "role": "Programmer, MIS Division",
+      "location": "Cebu, Philippines",
       "start": "2011-04",
       "end": "2012-03",
       "desc": "Built internal business applications — asset management and employee appraisal systems.",
@@ -107,8 +120,9 @@
       ]
     },
     {
-      "company": "GWAVE Dumaguete",
+      "company": "GWAVE",
       "role": "System Developer & DBA",
+      "location": "Dumaguete, Philippines",
       "start": "2009-08",
       "end": "2011-04",
       "desc": "Developer and database administrator for the GWAVE Legal Documentation System.",

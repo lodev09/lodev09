@@ -5,7 +5,8 @@ import { animate, motion, useReducedMotion } from "motion/react"
 import { scaleLinear, linkVertical } from "d3"
 import profile from "@/data/profile.json"
 import { MONTHS, formatPeriod, toFractionalYear } from "@/lib/period"
-import { StarIcon } from "./icons"
+import { CompanyLogo, LogoTile } from "./company-logo"
+import { GitHubIcon, PinIcon, StarIcon } from "./icons"
 import { TechIcon } from "./tech-icons"
 
 export type TimelineProject = {
@@ -22,6 +23,8 @@ type Item = {
   kind: "work" | "oss"
   title: string
   role?: string
+  location?: string
+  logo?: string
   stars?: number
   period: string
   desc: string
@@ -34,7 +37,7 @@ type Item = {
 const MIN_WIDTH = 760
 const PAD_X = 72
 const EDGE_PAD = 24
-const CARD_W = 184
+const CARD_W = 212
 const CARD_EXPANDED_W = 280
 const CARD_H = 78
 const CARD_GAP = 10
@@ -57,6 +60,8 @@ function buildItems(projects: TimelineProject[], now: number): Item[] {
     kind: "work",
     title: job.company,
     role: job.role,
+    location: job.location,
+    logo: "logo" in job ? job.logo : undefined,
     period: formatPeriod(job.start, job.end),
     desc: job.desc,
     url: "url" in job ? job.url : undefined,
@@ -86,7 +91,12 @@ function buildItems(projects: TimelineProject[], now: number): Item[] {
 function estimateExpandedHeight(item: Item) {
   const lines = Math.ceil(item.desc.length / 36)
   return (
-    CARD_H + 8 + lines * 20 + (item.tech.length > 0 ? 28 : 0) + (item.url ? 26 : 0) + 10
+    CARD_H +
+    25 +
+    (item.location ? 18 : 0) +
+    lines * 20 +
+    (item.tech.length > 0 ? 28 : 0) +
+    (item.url ? 26 : 0)
   )
 }
 
@@ -756,7 +766,6 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
               const cardLeft = expanded
                 ? clamp(dotX - CARD_EXPANDED_W / 2, EDGE_PAD, innerWidth - CARD_EXPANDED_W - EDGE_PAD)
                 : left
-              const color = item.kind === "work" ? "var(--tint)" : "var(--oss)"
               return (
                 <motion.div
                   key={item.id}
@@ -805,40 +814,54 @@ export function Timeline({ projects }: { projects: TimelineProject[] }) {
                     expanded ? "ring-steel/40" : "ring-separator hover:ring-steel/30"
                   }`}
                 >
+                  {/* Fixed to the target width so text wraps (and is measured) at its final size */}
                   <div
                     ref={(node) => {
                       contentRefs.current[item.id] = node
                     }}
+                    style={{ width: width - 28 }}
                   >
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className="size-1.5 shrink-0 rounded-full"
-                      style={{ background: color }}
-                    />
-                    <span className="truncate font-mono text-[10px] leading-none tracking-wide text-steel">
-                      {item.period}
-                    </span>
-                  </div>
-                  <h3 className="mt-1.5 truncate text-[13px] font-semibold leading-tight tracking-tight">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-1 truncate text-[11px] leading-tight text-steel">
-                    {item.kind === "oss" ? (
-                      <>
-                        <StarIcon className="size-3 shrink-0 text-amber-500" />
-                        {item.stars?.toLocaleString("en-US")}
-                      </>
+                  <div className="flex items-center gap-2.5">
+                    {item.kind === "work" ? (
+                      <CompanyLogo name={item.title} logo={item.logo} size={32} />
                     ) : (
-                      item.role
+                      <LogoTile size={32}>
+                        <GitHubIcon className="size-4 text-steel" />
+                      </LogoTile>
                     )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-[13px] font-semibold leading-tight tracking-tight">
+                        {item.title}
+                      </h3>
+                      <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] leading-tight text-steel">
+                        {item.kind === "oss" ? (
+                          <>
+                            <StarIcon className="size-3 shrink-0 text-amber-500" />
+                            {item.stars?.toLocaleString("en-US")}
+                          </>
+                        ) : (
+                          item.role
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 truncate pl-[42px] text-[10px] font-medium leading-none text-steel">
+                    {item.period}
                   </p>
                   {expanded && (
                     <motion.div
                       initial={reduced ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.25, delay: 0.1 }}
+                      className="mt-3 border-t border-separator pt-3"
                     >
-                      <p className="mt-2 text-xs leading-relaxed text-steel">{item.desc}</p>
+                      {item.location && (
+                        <p className="mb-1.5 flex items-center gap-1 text-[11px] text-steel">
+                          <PinIcon className="size-3 shrink-0" />
+                          {item.location}
+                        </p>
+                      )}
+                      <p className="text-xs leading-relaxed text-steel">{item.desc}</p>
                       {item.tech.length > 0 && (
                         <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           {item.tech.map((tech) => (

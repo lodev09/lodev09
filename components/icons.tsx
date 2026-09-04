@@ -31,6 +31,15 @@ export function MailIcon(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
+export function PinIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 21.5S5.5 15.6 5.5 10a6.5 6.5 0 0 1 13 0c0 5.6-6.5 11.5-6.5 11.5Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  )
+}
+
 export function StarIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
