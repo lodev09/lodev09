@@ -200,7 +200,7 @@ export default async function Home() {
                   Reach out
                 </a>
               </p>
-              <p className="mt-8 font-mono text-xs text-steel/70">
+              <p className="mt-8 text-xs text-steel/70">
                 © {new Date().getFullYear()} {profile.name} · Built with React — ironically, not
                 Native.
               </p>

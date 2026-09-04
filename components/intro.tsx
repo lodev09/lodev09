@@ -38,7 +38,16 @@ export function Intro() {
       <motion.h1 {...entrance(0.06)} className="mt-5 text-2xl font-semibold tracking-tight">
         {profile.name}
       </motion.h1>
-      <motion.p {...entrance(0.12)} className="mt-1 text-[15px] text-steel">
+      <motion.a
+        {...entrance(0.09)}
+        href={`https://github.com/${profile.github}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-1 text-sm text-steel transition-colors hover:text-tint"
+      >
+        @{profile.github}
+      </motion.a>
+      <motion.p {...entrance(0.12)} className="mt-2 text-[15px] text-steel">
         {profile.role} at{" "}
         <a
           href={profile.company.url}
