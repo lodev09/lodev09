@@ -2,7 +2,7 @@ import { Experience } from "@/components/experience"
 import { Intro } from "@/components/intro"
 import { Reveal } from "@/components/reveal"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { StarIcon } from "@/components/icons"
+import { ArrowIcon, GitHubIcon, StarIcon } from "@/components/icons"
 import { TechIcon } from "@/components/tech-icons"
 import { Timeline, type TimelineProject } from "@/components/timeline"
 import profile from "@/data/profile.json"
@@ -95,18 +95,6 @@ const personJsonLd = {
   sameAs: profile.socials.map((social) => social.href),
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-steel">
-      {children}
-    </h2>
-  )
-}
-
-function Grabber() {
-  return <div className="grabber mx-auto my-16" aria-hidden />
-}
-
 export default async function Home() {
   const projects = await getProjects()
 
@@ -116,97 +104,153 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
-      <div className="fixed right-5 top-5 z-50">
+      <a href="#main" className="skip-link">Skip to content</a>
+      <header className="site-header shell">
+        <a href="#" className="wordmark" aria-label={`${profile.name}, home`}>
+          @lodev09
+        </a>
+        <nav aria-label="Main navigation" className="main-nav">
+          <a href="#work">Work</a>
+          <a href="#journey">Journey</a>
+          <a href="#contact" className="nav-contact">
+            Let’s talk <ArrowIcon className="size-3.5" />
+          </a>
+        </nav>
         <ThemeToggle />
-      </div>
+      </header>
 
-      <main>
-        {/* svh keeps the timeline height stable while the mobile URL bar collapses */}
-        <div className="flex h-svh flex-col">
-          <header className="mx-auto w-full max-w-xl px-6 pt-20 sm:pt-24">
-            <Intro />
-          </header>
-
-          <section
-            aria-label="Career timeline"
-            className="relative mt-8 min-h-[320px] w-full flex-1 sm:mt-10"
-          >
-            <Timeline projects={projects} />
-          </section>
+      <main id="main">
+        <div className="shell">
+          <Intro />
         </div>
 
-        <div className="mx-auto w-full max-w-xl px-6 pb-24 sm:pb-28">
-          <Grabber />
-
-          <Reveal>
-            <Experience />
-          </Reveal>
-
-          <Grabber />
-
-          <Reveal>
-            <section>
-              <SectionHeading>Open Source</SectionHeading>
-              <div className="mt-4">
-                {projects.map((project) => (
-                  <a
-                    key={project.name}
-                    href={project.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group -mx-4 block rounded-2xl px-4 py-3.5 transition-colors hover:bg-surface"
-                  >
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h3 className="break-all font-mono text-sm font-medium transition-colors group-hover:text-tint">
-                        {project.name}
-                      </h3>
-                      <span className="flex shrink-0 items-center gap-1 font-mono text-xs text-steel">
-                        <StarIcon className="size-3 text-amber-500" />
-                        {project.stars.toLocaleString("en-US")}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-steel">{project.desc}</p>
-                    {project.languages.length > 0 && (
-                      <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
-                        {project.languages.map((language) => (
-                          <TechIcon key={language} name={language} />
-                        ))}
-                      </div>
-                    )}
-                  </a>
-                ))}
-              </div>
+        <div className="company-strip shell">
+          <p className="eyebrow">Good company.<br />Great things built together.</p>
+          <div className="company-names">
+            {profile.experience.filter((job) => "logo" in job).map((job) => (
               <a
-                href={`https://github.com/${profile.github}?tab=repositories`}
+                key={job.company}
+                href={"url" in job ? job.url : undefined}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-block text-sm font-medium text-tint hover:underline"
               >
-                All repositories →
+                {job.company.replace(" Pty Ltd", "").replace(" US", "")}
               </a>
-            </section>
-          </Reveal>
-
-          <Grabber />
-
-          <Reveal>
-            <footer className="text-center">
-              <p className="text-[15px] text-steel">
-                Did you find anything interesting?{" "}
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="font-medium text-ink transition-colors hover:text-tint"
-                >
-                  Reach out
-                </a>
-              </p>
-              <p className="mt-8 text-xs text-steel/70">
-                © {new Date().getFullYear()} {profile.name} · Built with React — ironically, not
-                Native.
-              </p>
-            </footer>
-          </Reveal>
+            ))}
+          </div>
         </div>
+
+        <section id="work" className="section shell" aria-labelledby="work-heading">
+          <Reveal className="section-heading">
+            <div>
+              <p className="eyebrow"><span>01 /</span> Out in the open</p>
+              <h2 id="work-heading">
+                Made for real.<br /><span className="text-steel">Shared with everyone.</span>
+              </h2>
+            </div>
+            <p className="section-description">
+              Tools I build, use, and put out into the world. A little contribution to a better
+              developer experience.
+            </p>
+          </Reveal>
+          <div className="project-grid">
+            {projects.map((project, index) => (
+              <Reveal key={project.name} delay={(index % 2) * 0.06}>
+                <a href={project.url} target="_blank" rel="noreferrer" className="project-card group">
+                  <div className="project-card-top">
+                    <span className="project-number">
+                      {String(index + 1).padStart(2, "0")} <span>/ OPEN SOURCE</span>
+                    </span>
+                    <ArrowIcon className="project-arrow size-5" />
+                  </div>
+                  <div className="project-glyph" aria-hidden>
+                    {index % 3 === 0 ? (
+                      <span className="glyph-stack"><i /><i /><i /></span>
+                    ) : index % 3 === 1 ? (
+                      <span className="glyph-brackets">{"{ }"}</span>
+                    ) : (
+                      <span className="glyph-orbit"><i /><i /><i /></span>
+                    )}
+                  </div>
+                  <h3>{project.name}</h3>
+                  <p className="project-description">{project.desc}</p>
+                  <div className="project-card-bottom">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {project.languages.map((language) => <TechIcon key={language} name={language} />)}
+                    </div>
+                    <span className="project-stars">
+                      <StarIcon className="size-3.5" />{project.stars.toLocaleString("en-US")}
+                    </span>
+                  </div>
+                </a>
+              </Reveal>
+            ))}
+          </div>
+          <a
+            href={`https://github.com/${profile.github}?tab=repositories`}
+            target="_blank"
+            rel="noreferrer"
+            className="repository-link"
+          >
+            <GitHubIcon className="size-4" />
+            {projects.length ? "There’s more where that came from" : "Explore my open-source projects on GitHub"}
+            <ArrowIcon className="size-4" />
+          </a>
+        </section>
+
+        <section id="journey" className="journey-section" aria-labelledby="journey-heading">
+          <Reveal className="section-heading shell">
+            <div>
+              <p className="eyebrow"><span>02 /</span> Always building</p>
+              <h2 id="journey-heading">
+                A work in progress.<br /><span className="text-steel">Since 2009.</span>
+              </h2>
+            </div>
+            <p className="section-description">
+              From my first line of code to leading mobile teams. Every chapter adds something.
+              <span className="timeline-hint">Drag to explore · Select a moment</span>
+            </p>
+          </Reveal>
+          <div className="timeline-frame">
+            <Timeline projects={projects} />
+          </div>
+          <Reveal className="shell">
+            <Experience />
+          </Reveal>
+        </section>
+
+        <section className="about-section shell" aria-labelledby="about-heading">
+          <Reveal className="about-layout">
+            <p className="eyebrow"><span>03 /</span> The person behind the pixels</p>
+            <div>
+              <h2 id="about-heading">Self-taught.<br />Never done learning.</h2>
+              <p>{profile.bio}</p>
+              <div className="about-note">
+                <span className="status-dot" /> Based in the Philippines. Building for everywhere.
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        <footer id="contact" className="contact-section shell">
+          <Reveal>
+            <div className="contact-top">
+              <p className="eyebrow">Good things start with a conversation</p>
+              <span className="contact-asterisk" aria-hidden>✳</span>
+            </div>
+            <a href={`mailto:${profile.email}`} className="contact-link">
+              Let’s make<br />something <em>great.</em><ArrowIcon />
+            </a>
+            <a href={`mailto:${profile.email}`} className="contact-email">
+              {profile.email} <ArrowIcon className="size-4" />
+            </a>
+          </Reveal>
+          <div className="footer-bottom">
+            <p>© {new Date().getFullYear()} {profile.name}</p>
+            <p>Built with React. Native at heart.</p>
+            <a href="#">Back to top ↑</a>
+          </div>
+        </footer>
       </main>
     </>
   )
