@@ -677,6 +677,10 @@ a:focus-visible, button:focus-visible {
 .project-card:hover .project-glyph {
   transform: translateY(-4px) rotate(-4deg);
 }
+.project-glyph svg {
+  width: 96px;
+  height: 72px;
+}
 .glyph-stack {
   position: relative;
   width: 62px;

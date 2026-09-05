@@ -3,6 +3,7 @@ import { Intro } from "@/components/intro"
 import { Reveal } from "@/components/reveal"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ArrowIcon, GitHubIcon, StarIcon } from "@/components/icons"
+import { ProjectGlyph } from "@/components/project-glyphs"
 import { TechIcon } from "@/components/tech-icons"
 import { Timeline, type TimelineProject } from "@/components/timeline"
 import profile from "@/data/profile.json"
@@ -164,13 +165,7 @@ export default async function Home() {
                     <ArrowIcon className="project-arrow size-5" />
                   </div>
                   <div className="project-glyph" aria-hidden>
-                    {index % 3 === 0 ? (
-                      <span className="glyph-stack"><i /><i /><i /></span>
-                    ) : index % 3 === 1 ? (
-                      <span className="glyph-brackets">{"{ }"}</span>
-                    ) : (
-                      <span className="glyph-orbit"><i /><i /><i /></span>
-                    )}
+                    <ProjectGlyph name={project.name} index={index} />
                   </div>
                   <h3>{project.name}</h3>
                   <p className="project-description">{project.desc}</p>
