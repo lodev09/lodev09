@@ -6,8 +6,10 @@
     "url": "https://lugg.com"
   },
   "avatar": "https://avatars.githubusercontent.com/u/6686328?v=4",
-  "bio": "Self-taught, obsessed with quality, and building open-source libraries for React Native. From the Philippines 🇵🇭",
+  "bio": "Self-taught, obsessed with quality, and building open-source libraries for React Native. From the Philippines. 🇵🇭",
   "email": "lodev09@gmail.com",
+  "website": "https://lodev09.com",
+  "location": "Philippines",
   "github": "lodev09",
   "featured": ["lugg/maps"],
   "socials": [

@@ -43,6 +43,9 @@ export function Intro() {
           <a href={`https://github.com/${profile.github}`} target="_blank" rel="noreferrer" className="text-link">
             <GitHubIcon className="size-4" /> GitHub <ArrowIcon className="size-3.5" />
           </a>
+          <a href="/cv.pdf" download className="text-link">
+            Download CV <ArrowIcon className="size-3.5 rotate-[135deg]" />
+          </a>
         </motion.div>
         <motion.div {...entrance(0.32)} className="hero-current">
           <span className="status-dot" />
