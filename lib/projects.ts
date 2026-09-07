@@ -55,12 +55,22 @@ export async function getProjects(): Promise<TimelineProject[]> {
     const featured = (await Promise.all(profile.featured.map(getRepo))).filter(
       (repo): repo is Repo => repo !== null
     )
+    const featuredNames = new Set(featured.map((repo) => repo.full_name))
+    const byRecency = (a: Repo, b: Repo) => +new Date(b.pushed_at) - +new Date(a.pushed_at)
     const combined = [
+      ...featured.sort(byRecency),
       ...repos
-        .filter((repo) => !repo.fork && repo.description && repo.name !== profile.github)
+        .filter(
+          (repo) =>
+            !repo.fork &&
+            repo.description &&
+            repo.stargazers_count > 0 &&
+            repo.name !== profile.github &&
+            !featuredNames.has(repo.full_name)
+        )
+        .sort(byRecency)
         .slice(0, 6),
-      ...featured,
-    ].sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at))
+    ]
     return Promise.all(
       combined.map(async (repo) => ({
         // Repos outside the profile account keep their owner prefix

@@ -11,7 +11,7 @@
   "website": "https://lodev09.com",
   "location": "Philippines",
   "github": "lodev09",
-  "featured": ["lugg/maps"],
+  "featured": ["lodev09/react-native-true-sheet", "lugg/maps"],
   "socials": [
     {
       "label": "GitHub",
